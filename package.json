@@ -9,8 +9,7 @@
     "lint": "eslint",
     "build": "bili --format cjs --format es",
     "test": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "publish": "npm publish"
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
