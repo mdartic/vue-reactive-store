@@ -17,7 +17,7 @@ lint:
 
 # test stage
 test:
-  stage: test
+  stage: tests
   script:
     - npm run test:coverage
 
