@@ -1,0 +1,35 @@
+image: node:lts
+
+stages:
+  - lint
+  - tests
+  - build
+
+before_script:
+  - npm i
+  - npm i vue@2.6.10 --no-save
+
+# lint stage
+lint:
+  stage: lint
+  script:
+    - npm run lint
+
+# test stage
+test:
+  stage: test
+  script:
+    - npm run test:coverage
+
+# build stage
+build:
+  stage: build
+  script:
+    - npm run build
+
+# publish
+publish:
+  stage: build
+  script:
+    - npm run publish
+  when: manual

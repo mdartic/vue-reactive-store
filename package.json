@@ -1,0 +1,48 @@
+{
+  "name": "vue-reactive-store",
+  "version": "0.0.4",
+  "description": "Structure your Vue.js data in a centralized way, with a reactive data store. Inspired by VueX and Vue.js .",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "lint": "eslint",
+    "build": "bili --format cjs --format es",
+    "test": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "publish": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/mad-z/vue-reactive-store.git"
+  },
+  "keywords": [
+    "state",
+    "management",
+    "vue"
+  ],
+  "author": "Mathieu DARTIGUES",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/mad-z/vue-reactive-store/issues"
+  },
+  "homepage": "https://gitlab.com/mad-z/vue-reactive-store#readme",
+  "peerDependencies": {
+    "vue": "^2.6.10"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.12",
+    "@typescript-eslint/parser": "^1.7.0",
+    "bili": "^4.7.3",
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-node": "^9.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jest": "^24.8.0",
+    "rollup-plugin-typescript2": "^0.21.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.5"
+  }
+}
