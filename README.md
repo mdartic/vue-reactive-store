@@ -33,9 +33,14 @@ A store is composed of :
 
 I hope the use of TypeScript will benefit for better understanding.
 
+First, install `vue-reactive-store` in your Vue.js app.
+
 ```
 npm i vue-reactive-store
 ```
+
+Add a store as a JS object, and transform it by creating
+a `VueReactiveStore` instance.
 
 ```js
 // src/store.js
@@ -81,7 +86,12 @@ const reactiveStore = new VueReactiveStore(store)
 export default store
 ```
 
+Finally, use it in your components by importing the store,
+and put the data that interest you in the `data` and `computed`
+part of your app.
+
 ```vue
+// src/components/myComponent.js
 <template>
   <div>
     {{ myCurrentState }}
@@ -95,7 +105,6 @@ export default store
 </template>
 
 <script>
-// src/components/myComponent.js
 import store from '../store'
 
 export default {
@@ -109,6 +118,12 @@ export default {
 }
 </script>
 ```
+
+That sould do the trick, now your store is reactive,
+and you could use it in all the component you want by importing
+this object.
+But, don't import it everywhere, just use it in your 'top-level'
+components to facilitate your project maintenability...
 
 ### Next episodes
 
