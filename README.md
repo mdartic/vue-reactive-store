@@ -79,7 +79,35 @@ const store = {
 const reactiveStore = new VueReactiveStore(store)
 
 export default store
+```
 
+```vue
+<template>
+  <div>
+    {{ myCurrentState }}
+    <div v-if="!state.loading">
+      Data : {{ state.data }}
+    </div>
+    <div v-if="state.error">
+      {{ state.error }}
+    </div>
+  </div>
+</template>
+
+<script>
+// src/components/myComponent.js
+import store from '../store'
+
+export default {
+  data: {
+    state: store.state
+  },
+  computed: store.computed,
+  created() {
+    store.actions.fetchData()
+  }
+}
+</script>
 ```
 
 ### Next episodes
