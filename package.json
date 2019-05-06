@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/mad-z/vue-reactive-store.git"
+    "url": "git+ssh://git@github.com:mdartic/vue-reactive-store.git"
   },
   "keywords": [
     "state",
@@ -23,9 +23,9 @@
   "author": "Mathieu DARTIGUES",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/mad-z/vue-reactive-store/issues"
+    "url": "https://github.com/mdartic/vue-reactive-store/issues"
   },
-  "homepage": "https://gitlab.com/mad-z/vue-reactive-store#readme",
+  "homepage": "https://github.com/mdartic/vue-reactive-store#readme",
   "peerDependencies": {
     "vue": "^2.6.10"
   },
