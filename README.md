@@ -1,5 +1,8 @@
 ## vue-reactive-store
 
+![](https://gitlab.com/mad-z/vue-reactive-store-ci-cd/badges/master/pipeline.svg)
+![](https://gitlab.com/mad-z/vue-reactive-store-ci-cd/badges/master/coverage.svg)
+
 *Vue.js* (only) library for **managing a centralized state**, inspired by Vue.js and VueX.
 
 Without `mutations`, and with async `actions` mutating directly the state.
@@ -26,7 +29,7 @@ A store is composed of :
 * **actions** that will make API calls, mutate the state, ... (think `actions` for VueX, but with `mutations` inside)
 * **watchers** that could react to state / computed evolutions (same as `watch` for Vue.js instance)
 * **hooks**, trigerred for state evolution, computed properties, actions / watchers trigerred
-* **modules**, aka sub-stores, work in progress
+* **modules**, aka sub-stores, namespaced
 * ***props***, like Vue.js instances, but, just an idea for the moment
 
 ### How to use it
@@ -128,7 +131,7 @@ components to facilitate your project maintenability...
 ### Next episodes
 
 * finishing blog articles (FR)
-* extend the code coverage
+* extend the code coverage (done)
 * release a plugin for log every mutation / action call / watch / ...
 * release a plugin for storing data in localStorage
 * listen to community needs
