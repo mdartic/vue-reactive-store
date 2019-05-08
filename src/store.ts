@@ -2,7 +2,7 @@
 import Vue, { ComputedOptions, WatchOptionsWithHandler, WatchHandler } from 'vue'
 
 // eslint-disable-next-line no-unused-vars
-import { VRS, VRSHooks } from './typings'
+import { VRSStore, VRSHooks } from './typings'
 
 import { hookWrapper } from './wrapper'
 
@@ -11,7 +11,7 @@ import { hookWrapper } from './wrapper'
  * based on VueJS reactivity system.
  * Inspired by VueX and Vue.js instance.
  */
-export class VueReactiveStore implements VRS {
+export class VueReactiveStore implements VRSStore {
   /**
    * Global hooks, called each time :
    * * an action is trigerred (before / after hooks)
@@ -22,8 +22,13 @@ export class VueReactiveStore implements VRS {
    */
   static globalHooks: VRSHooks[] = [];
 
+  /**
+   * local Vue instance,
+   * to use reactivity system of Vue.js
+   */
+  private _vm: any;
+
   name = '';
-  _vm: any;
   state: {
     [name: string]: any,
   } = {}
@@ -36,7 +41,10 @@ export class VueReactiveStore implements VRS {
   watch: Record<string, string | WatchOptionsWithHandler<any> | WatchHandler<any>> = {}
   hooks: VRSHooks = {}
   modules: {
-    [name: string]: VRS
+    [name: string]: VRSStore
+  } = {}
+  private subStores: {
+    [name: string]: VueReactiveStore
   } = {}
 
   /**
@@ -52,7 +60,7 @@ export class VueReactiveStore implements VRS {
    * * modules, aka sub-stores (wip)
    * * hooks that could be trigerred before / after store evolution
    */
-  constructor (store: VRS) {
+  constructor (store: VRSStore) {
     this.name = store.name
     this.state = store.state
     this.computed = store.computed || {}
@@ -64,7 +72,7 @@ export class VueReactiveStore implements VRS {
     // or in a computed property
     // to correctly namespace them
     Object.keys(this.modules).forEach((moduleName) => {
-      if (this.state[moduleName] !== null) {
+      if (this.state[moduleName]) {
         const errorMessage = `
           You're trying to add a module which its name already exist as a state property.
           Please rename your module or your state property.
@@ -80,6 +88,10 @@ export class VueReactiveStore implements VRS {
         `
         throw new Error(errorMessage)
       }
+      this.subStores[moduleName] = new VueReactiveStore({
+        ...this.modules[moduleName],
+        name: this.name + '.' + this.modules[moduleName].name
+      })
     })
 
     // wrap each action function to be catch when called
@@ -92,7 +104,7 @@ export class VueReactiveStore implements VRS {
       before: (this.hooks && this.hooks.actions && this.hooks.actions.before),
       after: (this.hooks && this.hooks.actions && this.hooks.actions.after)
     })
-    Object.keys(this.actions || {}).forEach((key) => {
+    Object.keys(this.actions).forEach((key) => {
       this.actions[key] = hookWrapper(
         this.name,
         this.state,
@@ -111,7 +123,8 @@ export class VueReactiveStore implements VRS {
     })
 
     // listen to state mutations of current store
-    // doesn't work for sub stores
+    // doesn't work for modules because they will be added after
+    // knowing each modules has been transformed in VRS
     Object.keys(this.state).forEach((key) => {
       this._vm.$watch(key, (newValue: any, oldValue: any) => {
         // call global hooks in order
@@ -126,7 +139,7 @@ export class VueReactiveStore implements VRS {
     })
 
     // listen to computed properties recomputed
-    // idem, doesn't work for sub stores
+    // idem, doesn't work for modules
     Object.keys(this.computed).forEach((key) => {
       this._vm.$watch(key, (newValue: any, oldValue: any) => {
         // call global hooks in order
@@ -138,6 +151,15 @@ export class VueReactiveStore implements VRS {
       }, {
         deep: true
       })
+    })
+
+    /**
+     * We add each module state/computed
+     * in the store where they are added
+     */
+    Object.keys(this.subStores).forEach((moduleName) => {
+      this.state[moduleName] = this.subStores[moduleName].state
+      this.computed[moduleName] = this.subStores[moduleName].computed
     })
   }
 }

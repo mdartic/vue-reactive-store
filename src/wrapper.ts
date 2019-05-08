@@ -21,7 +21,7 @@ export const hookWrapper = (
 
   // call all before hooks
   hooks.forEach(hook => {
-    if (hook.before) hook.before(storeName, funcName, storeState)
+    hook.before && hook.before(storeName, funcName, storeState)
   })
 
   // we call the initial function with parameters
@@ -32,6 +32,6 @@ export const hookWrapper = (
 
   // call all after hooks
   hooks.forEach(hook => {
-    if (hook.after) hook.after(storeName, funcName, storeState)
+    hook.after && hook.after(storeName, funcName, storeState)
   })
 }

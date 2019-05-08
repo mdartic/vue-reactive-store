@@ -47,7 +47,10 @@ interface VRSActions {
   [name: string]: Function,
 }
 
-export interface VRS {
+/**
+ * Store of VRS
+ */
+export interface VRSStore {
   name: string,
   state: VRSState,
   actions?: VRSActions,
