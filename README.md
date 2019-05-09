@@ -27,7 +27,7 @@ A store is composed of :
 * a **state**, that will evolve in time (think the `data` of a Vue.js instance)
 * **computed** properties based on this state (think the `computed` of a Vue.js instance, or the `getters` for VueX)
 * **actions** that will make API calls, mutate the state, ... (think `actions` for VueX, but with `mutations` inside)
-* **watchers** that could react to state / computed evolutions (same as `watch` for Vue.js instance)
+* **watch(ers)** that could react to state / computed evolutions (same as `watch` for Vue.js instance)
 * **hooks**, trigerred for state evolution, computed properties, actions / watchers trigerred
 * **modules**, aka sub-stores, namespaced
 * ***props***, like Vue.js instances, but, just an idea for the moment
