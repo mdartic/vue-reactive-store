@@ -99,7 +99,7 @@ export class VueReactiveStore implements VRSStore {
       // }
       this.subStores[moduleName] = new VueReactiveStore({
         ...this.modules[moduleName],
-        name: this.name + '.' + this.modules[moduleName].name
+        name: this.name + '.modules.' + this.modules[moduleName].name
       })
     })
 
