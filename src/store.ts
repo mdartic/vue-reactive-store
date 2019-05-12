@@ -181,7 +181,7 @@ export class VueReactiveStore implements VRSStore {
      */
     Object.keys(this.subStores).forEach((moduleName) => {
       this.state[moduleName] = this.subStores[moduleName].state
-      this.computed[moduleName] = this.subStores[moduleName].computed
+      // this.computed[moduleName] = this.subStores[moduleName].computed
     })
   }
 }
