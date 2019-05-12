@@ -89,14 +89,14 @@ export class VueReactiveStore implements VRSStore {
         `
         throw new Error(errorMessage)
       }
-      if (this.computed[moduleName]) {
-        const errorMessage = `
-          You're trying to add a module which its name already exist as a computed property.
-          Please rename your module or your computed property.
-          (Store ${this.name}, computed/module ${moduleName})
-        `
-        throw new Error(errorMessage)
-      }
+      // if (this.computed[moduleName]) {
+      //   const errorMessage = `
+      //     You're trying to add a module which its name already exist as a computed property.
+      //     Please rename your module or your computed property.
+      //     (Store ${this.name}, computed/module ${moduleName})
+      //   `
+      //   throw new Error(errorMessage)
+      // }
       this.subStores[moduleName] = new VueReactiveStore({
         ...this.modules[moduleName],
         name: this.name + '.' + this.modules[moduleName].name
