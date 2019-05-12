@@ -69,8 +69,9 @@ export class VueReactiveStore implements VRSStore {
    * * plugins that could be trigerred before / after store evolution
    */
   constructor (store: VRSStore) {
-    this.name = store.name
-    this.state = store.state
+    if (!store) throw new Error('Please provide a store to VueReactiveStore')
+    this.name = store.name || 'default store name'
+    this.state = store.state || {}
     this.computed = store.computed || {}
     this.actions = store.actions || {}
     this.plugins = store.plugins || []
