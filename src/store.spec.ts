@@ -1,16 +1,13 @@
 // import 'jest';
 import Vue from 'vue'
 import { VueReactiveStore } from './store'
-import { hookWrapper } from './wrapper'
+
 // eslint-disable-next-line no-unused-vars
-import { VRSStore, VRSHook, VRSHooks, VRSState } from './typings'
+import { VRSStore, VRSHook, VRSPlugin, VRSState } from './typings'
 
 describe('VueReactiveStore', () => {
   test('has global hooks available', () => {
-    expect(VueReactiveStore.globalHooks).toBeDefined()
-  })
-  test('and the array is empty', () => {
-    expect(VueReactiveStore.globalHooks.length).toBe(0)
+    expect(VueReactiveStore.registerPlugin).toBeDefined()
   })
   test('is built with a JS Object with a state sharing the same reference than VRS Store', () => {
     const state = {
@@ -25,7 +22,7 @@ describe('VueReactiveStore', () => {
     expect(store.state).toBe(state)
     expect(store.computed).toStrictEqual({})
     expect(store.actions).toStrictEqual({})
-    expect(store.hooks).toStrictEqual({})
+    expect(store.plugins).toStrictEqual([])
     expect(store.modules).toStrictEqual({})
   })
   test('can be mutated directly and the state of VRS Store is equal', () => {
@@ -161,7 +158,7 @@ describe('VueReactiveStore', () => {
     expect(jsStore.actions.myAction).not.toBe(myMockAction)
     jsStore.actions.myAction('hello')
   })
-  test('trigger a global hook on a state (after) when a state property change', async () => {
+  test('trigger a global plugin on a state (after) when a state property change', async () => {
     const jsStore: VRSStore = {
       name: 'my-store',
       state: {
@@ -169,17 +166,17 @@ describe('VueReactiveStore', () => {
         myData2: 'pouic'
       }
     }
-    const hook = {
+    const plugin = {
       state: {
         after: jest.fn()
       }
     }
-    VueReactiveStore.globalHooks.push(hook)
+    VueReactiveStore.registerPlugin(plugin)
     const reactiveStore = new VueReactiveStore(jsStore)
     jsStore.state.myData = 'hello'
     await Vue.nextTick()
-    expect(hook.state.after).toHaveBeenCalled()
-    expect(hook.state.after).toHaveBeenCalledWith('my-store', 'myData', 'hello', 'pouet')
+    expect(plugin.state.after).toHaveBeenCalled()
+    expect(plugin.state.after).toHaveBeenCalledWith('my-store', 'myData', 'hello', 'pouet')
   })
   test('trigger a global hook on a computed (after) when a computed property change', async () => {
     const jsStore: VRSStore = {
@@ -194,17 +191,17 @@ describe('VueReactiveStore', () => {
         }
       }
     }
-    const hook = {
+    const plugin = {
       computed: {
         after: jest.fn()
       }
     }
-    VueReactiveStore.globalHooks.push(hook)
+    VueReactiveStore.registerPlugin(plugin)
     const reactiveStore = new VueReactiveStore(jsStore)
     jsStore.state.myData = 'hello'
     await Vue.nextTick()
-    expect(hook.computed.after).toHaveBeenCalled()
-    expect(hook.computed.after).toHaveBeenCalledWith('my-store', 'myComputed', 'hellopouic', 'pouetpouic')
+    expect(plugin.computed.after).toHaveBeenCalled()
+    expect(plugin.computed.after).toHaveBeenCalledWith('my-store', 'myComputed', 'hellopouic', 'pouetpouic')
   })
   test('trigger a hook with the right name of store when it s a state property of a module', async () => {
     const module1: VRSStore = {
@@ -221,16 +218,16 @@ describe('VueReactiveStore', () => {
         myComputed: module1
       }
     }
-    const hook = {
+    const plugin = {
       state: {
         after: jest.fn()
       }
     }
-    VueReactiveStore.globalHooks.push(hook)
+    VueReactiveStore.registerPlugin(plugin)
     const reactiveStore = new VueReactiveStore(jsStore)
     module1.state.myData = 'hello'
     await Vue.nextTick()
-    expect(hook.state.after).toHaveBeenCalled()
-    expect(hook.state.after).toHaveBeenCalledWith('my-store.module1', 'myData', 'hello', 'myData of module1')
+    expect(plugin.state.after).toHaveBeenCalled()
+    expect(plugin.state.after).toHaveBeenCalledWith('my-store.module1', 'myData', 'hello', 'myData of module1')
   })
 })

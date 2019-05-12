@@ -2,7 +2,7 @@
 import Vue, { ComputedOptions, WatchOptionsWithHandler, WatchHandler } from 'vue'
 
 // eslint-disable-next-line no-unused-vars
-import { VRSStore, VRSHooks } from './typings'
+import { VRSStore, VRSPlugin } from './typings'
 
 import { hookWrapper } from './wrapper'
 
@@ -20,7 +20,15 @@ export class VueReactiveStore implements VRSStore {
    * * a prop property has changed (after hook, mutated out of the store himself)
    * * a watch triger has been trigerred (after hook)
    */
-  static globalHooks: VRSHooks[] = [];
+  private static globalHooks: VRSPlugin[] = [];
+
+  static registerPlugin (plugin: VRSPlugin) {
+    if (VueReactiveStore.globalHooks.indexOf(plugin) === -1) {
+      VueReactiveStore.globalHooks.push(plugin)
+    } else {
+      console.warn('You\'re trying to add a plugin already registered.')
+    }
+  }
 
   /**
    * local Vue instance,
@@ -39,7 +47,7 @@ export class VueReactiveStore implements VRSStore {
     [name: string]: (() => any) | ComputedOptions<any>
   } = {}
   watch: Record<string, string | WatchOptionsWithHandler<any> | WatchHandler<any>> = {}
-  hooks: VRSHooks = {}
+  plugins: VRSPlugin[] = []
   modules: {
     [name: string]: VRSStore
   } = {}
@@ -50,7 +58,7 @@ export class VueReactiveStore implements VRSStore {
   /**
    * Reactive store based on VueJS reactivity system
    *
-   * @param {VRS} store
+   * @param {VRSStore} store
    * The store, composed of :
    * * name
    * * state
@@ -58,14 +66,14 @@ export class VueReactiveStore implements VRSStore {
    * * actions potentially async
    * * watchers
    * * modules, aka sub-stores (wip)
-   * * hooks that could be trigerred before / after store evolution
+   * * plugins that could be trigerred before / after store evolution
    */
   constructor (store: VRSStore) {
     this.name = store.name
     this.state = store.state
     this.computed = store.computed || {}
     this.actions = store.actions || {}
-    this.hooks = store.hooks || {}
+    this.plugins = store.plugins || []
     this.modules = store.modules || {}
 
     // check if each module doesn't exist in store state
@@ -96,14 +104,17 @@ export class VueReactiveStore implements VRSStore {
 
     // wrap each action function to be catch when called
     // filter global hooks
-    const actionsHooks = VueReactiveStore.globalHooks.map((hook: VRSHooks) => ({
+    const actionsHooks = VueReactiveStore.globalHooks.map((hook: VRSPlugin) => ({
       ...hook.actions
     }))
     // and add the 'local' hook if available
-    actionsHooks.push({
-      before: (this.hooks && this.hooks.actions && this.hooks.actions.before),
-      after: (this.hooks && this.hooks.actions && this.hooks.actions.after)
-    })
+    // const actionsHooks = this.plugins.map((hook: VRSPlugin) => ({
+    //   ...hook.actions
+    // }))
+    // actionsHooks.push({
+    //   before: (this.hooks && this.hooks.actions && this.hooks.actions.before),
+    //   after: (this.hooks && this.hooks.actions && this.hooks.actions.after)
+    // })
     Object.keys(this.actions).forEach((key) => {
       this.actions[key] = hookWrapper(
         this.name,
@@ -117,7 +128,7 @@ export class VueReactiveStore implements VRSStore {
     // create a Vue instance
     // to use the VueJS reactivity system
     this._vm = new Vue({
-      data: store.state,
+      data: () => store.state,
       computed: store.computed,
       watch: store.watch
     })
@@ -133,6 +144,11 @@ export class VueReactiveStore implements VRSStore {
             hook.state.after(this.name, key, newValue, oldValue)
           }
         })
+        // this.plugins.forEach((plugin) => {
+        //   if (plugin.state && plugin.state.after) {
+        //     plugin.state.after(this.name, key, newValue, oldValue)
+        //   }
+        // })
       }, {
         deep: true
       })
@@ -148,6 +164,11 @@ export class VueReactiveStore implements VRSStore {
             hook.computed.after(this.name, key, newValue, oldValue)
           }
         })
+        // this.plugins.forEach((plugin) => {
+        //   if (plugin.computed && plugin.computed.after) {
+        //     plugin.computed.after(this.name, key, newValue, oldValue)
+        //   }
+        // })
       }, {
         deep: true
       })

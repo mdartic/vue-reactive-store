@@ -19,8 +19,8 @@ interface VRSHookAfterOnly {
 }
 
 /**
- * Hooks for Vue Reactive Store
- * Functions trigerred :
+ * Plugin for Vue Reactive Store,
+ * composed of hooks trigerred :
  * * before / after each actions
  * * after state is mutated
  * * after computed properties are recomputed
@@ -32,10 +32,10 @@ interface VRSHookAfterOnly {
  *   * currentState (actions / watchers) / initialValue (state / computed)
  *   * finalValue (state / computed)
  */
-export interface VRSHooks {
+export interface VRSPlugin {
+  actions?: VRSHook,
   state?: VRSHookAfterOnly,
   computed?: VRSHookAfterOnly,
-  actions?: VRSHook,
   watch?: VRSHook,
 }
 
@@ -59,8 +59,8 @@ export interface VRSStore {
   },
   // props?: Object,
   watch?: Record<string, string | WatchOptionsWithHandler<any> | WatchHandler<any>>,
-  hooks?: VRSHooks,
+  plugins?: VRSPlugin[],
   modules?: {
-    [name: string]: VRS
+    [name: string]: VRSStore
   },
 }
