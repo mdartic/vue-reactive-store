@@ -40,7 +40,7 @@ describe('VueReactiveStore', () => {
     expect(state.myData).toBe(store.state.myData)
   })
   test('add reactive modules to the main store', () => {
-    const module1: VRSStore = {
+    const module1 = {
       name: 'module1',
       state: {
         myData: 'myData of module1',
@@ -52,7 +52,7 @@ describe('VueReactiveStore', () => {
         }
       }
     }
-    const jsStore: VRSStore = {
+    const jsStore = {
       name: 'my-store',
       state: {
         myData: 'pouet',
@@ -64,7 +64,6 @@ describe('VueReactiveStore', () => {
     }
     const store = new VueReactiveStore(jsStore)
     expect(store.state.module1).toBe(module1.state)
-    expect(store.computed.module1).toBe(module1.computed)
   })
   test('throw an error when a module is named like a state prop', () => {
     const module1: VRSStore = {
@@ -82,33 +81,6 @@ describe('VueReactiveStore', () => {
       },
       modules: {
         myData: module1
-      }
-    }
-    expect(() => {
-      const reactiveStore = new VueReactiveStore(jsStore)
-    }).toThrow()
-  })
-  test('throw an error when a module is named like a computed prop', () => {
-    const module1: VRSStore = {
-      name: 'module1',
-      state: {
-        myData: 'myData of module1',
-        myData2: 'myData2 of module1'
-      }
-    }
-    const jsStore: VRSStore = {
-      name: 'my-store',
-      state: {
-        myData: 'pouet',
-        myData2: 'pouic'
-      },
-      computed: {
-        myComputed () {
-          return jsStore.state.myData + jsStore.state.myData2
-        }
-      },
-      modules: {
-        myComputed: module1
       }
     }
     expect(() => {
@@ -228,6 +200,6 @@ describe('VueReactiveStore', () => {
     module1.state.myData = 'hello'
     await Vue.nextTick()
     expect(plugin.state.after).toHaveBeenCalled()
-    expect(plugin.state.after).toHaveBeenCalledWith('my-store.module1', 'myData', 'hello', 'myData of module1')
+    expect(plugin.state.after).toHaveBeenCalledWith('my-store.modules.module1', 'myData', 'hello', 'myData of module1')
   })
 })
