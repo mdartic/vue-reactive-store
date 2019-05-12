@@ -2,9 +2,9 @@
   "name": "vue-reactive-store",
   "version": "0.0.10",
   "description": "Structure your Vue.js data in a centralized way, with a reactive data store. Inspired by VueX and Vue.js .",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "types/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.esm.js",
+  "types": "./types/index.d.ts",
   "scripts": {
     "lint": "eslint",
     "build": "bili --format cjs --format es",

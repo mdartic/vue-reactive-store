@@ -51,8 +51,8 @@ interface VRSActions {
  * Store of VRS
  */
 export interface VRSStore {
-  name: string,
-  state: VRSState,
+  name?: string,
+  state?: VRSState,
   actions?: VRSActions,
   computed?: {
     [name: string]: (() => any) | ComputedOptions<any>
