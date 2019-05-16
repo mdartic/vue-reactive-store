@@ -128,10 +128,76 @@ this object.
 But, don't import it everywhere, just use it in your 'top-level'
 components to facilitate your project maintenability...
 
+### Logger plugin
+
+There is a logger plugin that logs 
+* each action trigerred (before / after)
+* each mutation on the state (after)
+* each computed property recomputed (after)
+
+To use it, you can do like this :
+
+```js
+// src/store.js
+import VueReactiveStore from 'vue-reactive-store'
+import VRSPluginLogger from 'vue-reactive-store/dist/index.esm'
+
+const store = {
+  state: {
+    loading: false,
+    error: null,
+    data: null
+  },
+  computed: {
+    myCurrentState() {
+      if (store.state.loading === true) return 'is loading...'
+      if (store.state.error) return 'error...'
+      return 'store seems ok'
+    }
+  },
+  actions: {
+    async fetchData() {
+      store.state.loading = true
+      try {
+        // make api call
+        const response = await myApi.fetchSomeData()
+        store.state.data = response
+      } catch (e) {
+        store.state.error = e
+      }
+      store.state.loading = false
+    }
+  }
+}
+
+VueReactiveStore.registerPlugin(VRSPluginLogger);
+
+const reactiveStore = new VueReactiveStore(store)
+
+// this call will fetch data
+// and the VRSPluginLogger will log
+// * the action trigerred (before)
+// * the state mutations (after)
+// * the computed properties (after)
+// * the end of the action (after)
+store.actions.fetchData()
+
+export default store
+```
+
+You can also decide to just log action / state / computed without previous/next state.
+
+```js
+// by default all are true and so are verbose logs
+VRSPluginLogger.logSettings.actions = false;
+VRSPluginLogger.logSettings.computed = false;
+VRSPluginLogger.logSettings.state = false;
+```
+
+
 ### Next episodes
 
 * finishing blog articles (FR)
-* release a plugin for log every mutation / action call / watch / ...
 * release a plugin for storing data in localStorage
 * release a plugin for history (undo / redo)
 * listen to community needs
