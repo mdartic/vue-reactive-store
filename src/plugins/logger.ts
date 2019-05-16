@@ -96,3 +96,5 @@ const loggerPlugin: VRSPluginLogger = {
     }
   }
 }
+
+export default loggerPlugin
