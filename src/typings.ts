@@ -2,11 +2,11 @@
 import { ComputedOptions, WatchOptionsWithHandler, WatchHandler } from 'vue'
 
 interface VRSHookFunction {
-  (storeName: string, funcName: string, currentState: VRSState): any
+  (store: VRSStore, funcName: string, wrapperId: string): any
 }
 
 interface VRSHookFunctionOldNewValues {
-  (storeName: string, funcName: string, newValue: any, oldValue: any): any
+  (store: VRSStore, funcName: string, newValue: any, oldValue: any): any
 }
 
 export interface VRSHook {
@@ -43,6 +43,10 @@ export interface VRSState {
   [name: string]: any,
 }
 
+export interface VRSComputed {
+  [name: string]: (() => any) | ComputedOptions<any>
+}
+
 interface VRSActions {
   [name: string]: Function,
 }
@@ -54,9 +58,7 @@ export interface VRSStore {
   name?: string,
   state?: VRSState,
   actions?: VRSActions,
-  computed?: {
-    [name: string]: (() => any) | ComputedOptions<any>
-  },
+  computed?: VRSComputed,
   // props?: Object,
   watch?: Record<string, string | WatchOptionsWithHandler<any> | WatchHandler<any>>,
   plugins?: VRSPlugin[],

@@ -13,18 +13,18 @@ import { hookWrapper } from './wrapper'
  */
 export class VueReactiveStore implements VRSStore {
   /**
-   * Global hooks, called each time :
+   * Global plugins, called each time :
    * * an action is trigerred (before / after hooks)
    * * a property of the state is mutated (after hook)
    * * a computed property has been recomputed (after hook)
    * * a prop property has changed (after hook, mutated out of the store himself)
    * * a watch triger has been trigerred (after hook)
    */
-  private static globalHooks: VRSPlugin[] = [];
+  private static globalPlugins: VRSPlugin[] = [];
 
   static registerPlugin (plugin: VRSPlugin) {
-    if (VueReactiveStore.globalHooks.indexOf(plugin) === -1) {
-      VueReactiveStore.globalHooks.push(plugin)
+    if (VueReactiveStore.globalPlugins.indexOf(plugin) === -1) {
+      VueReactiveStore.globalPlugins.push(plugin)
     } else {
       console.warn('You\'re trying to add a plugin already registered.')
     }
@@ -54,6 +54,7 @@ export class VueReactiveStore implements VRSStore {
   private subStores: {
     [name: string]: VueReactiveStore
   } = {}
+  private rootStore: VRSStore
 
   /**
    * Reactive store based on VueJS reactivity system
@@ -67,15 +68,20 @@ export class VueReactiveStore implements VRSStore {
    * * watchers
    * * modules, aka sub-stores (wip)
    * * plugins that could be trigerred before / after store evolution
+   * @param {VRSStore} rootStore
+   * Used only for internal purpose (plugins),
+   * reference to the root store.
    */
-  constructor (store: VRSStore) {
+  constructor (store: VRSStore, rootStore?: VRSStore) {
     if (!store) throw new Error('Please provide a store to VueReactiveStore')
     this.name = store.name || 'default store name'
     this.state = store.state || {}
     this.computed = store.computed || {}
     this.actions = store.actions || {}
+    this.watch = store.watch || {}
     this.plugins = store.plugins || []
     this.modules = store.modules || {}
+    this.rootStore = rootStore || this
 
     // check if each module doesn't exist in store state
     // or in a computed property
@@ -100,27 +106,20 @@ export class VueReactiveStore implements VRSStore {
       this.subStores[moduleName] = new VueReactiveStore({
         ...this.modules[moduleName],
         name: this.name + '.modules.' + this.modules[moduleName].name
-      })
+      }, this.rootStore)
     })
 
-    // wrap each action function to be catch when called
-    // filter global hooks
-    const actionsHooks = VueReactiveStore.globalHooks.map((hook: VRSPlugin) => ({
+    // group all actions hooks available, from global and local plugins
+    const actionsHooks = VueReactiveStore.globalPlugins.map((hook: VRSPlugin) => ({
       ...hook.actions
-    }))
-    // and add the 'local' hook if available
-    // const actionsHooks = this.plugins.map((hook: VRSPlugin) => ({
-    //   ...hook.actions
-    // }))
-    // actionsHooks.push({
-    //   before: (this.hooks && this.hooks.actions && this.hooks.actions.before),
-    //   after: (this.hooks && this.hooks.actions && this.hooks.actions.after)
-    // })
+    })).concat(this.plugins.map((hook: VRSPlugin) => ({
+      ...hook.actions
+    })))
+
     Object.keys(this.actions).forEach((key) => {
       this.actions[key] = hookWrapper(
-        this.name,
-        this.state,
-        key,
+        this.rootStore,
+        this.name + '.actions.' + key,
         this.actions[key],
         actionsHooks
       )
@@ -129,7 +128,7 @@ export class VueReactiveStore implements VRSStore {
     // create a Vue instance
     // to use the VueJS reactivity system
     this._vm = new Vue({
-      data: () => store.state,
+      data: () => this.state,
       computed: store.computed,
       watch: store.watch
     })
@@ -140,16 +139,12 @@ export class VueReactiveStore implements VRSStore {
     Object.keys(this.state).forEach((key) => {
       this._vm.$watch(key, (newValue: any, oldValue: any) => {
         // call global hooks in order
-        VueReactiveStore.globalHooks.forEach((hook) => {
-          if (hook.state && hook.state.after) {
-            hook.state.after(this.name, key, newValue, oldValue)
-          }
+        VueReactiveStore.globalPlugins.forEach((hook) => {
+          hook.state && hook.state.after && hook.state.after(this.rootStore, this.name + '.state.' + key, newValue, oldValue)
         })
-        // this.plugins.forEach((plugin) => {
-        //   if (plugin.state && plugin.state.after) {
-        //     plugin.state.after(this.name, key, newValue, oldValue)
-        //   }
-        // })
+        this.plugins.forEach((hook) => {
+          hook.state && hook.state.after && hook.state.after(this.rootStore, this.name + '.state.' + key, newValue, oldValue)
+        })
       }, {
         deep: true
       })
@@ -160,16 +155,12 @@ export class VueReactiveStore implements VRSStore {
     Object.keys(this.computed).forEach((key) => {
       this._vm.$watch(key, (newValue: any, oldValue: any) => {
         // call global hooks in order
-        VueReactiveStore.globalHooks.forEach((hook) => {
-          if (hook.computed && hook.computed.after) {
-            hook.computed.after(this.name, key, newValue, oldValue)
-          }
+        VueReactiveStore.globalPlugins.forEach((hook) => {
+          hook.computed && hook.computed.after && hook.computed.after(this.rootStore, this.name + '.computed.' + key, newValue, oldValue)
         })
-        // this.plugins.forEach((plugin) => {
-        //   if (plugin.computed && plugin.computed.after) {
-        //     plugin.computed.after(this.name, key, newValue, oldValue)
-        //   }
-        // })
+        this.plugins.forEach((hook) => {
+          hook.computed && hook.computed.after && hook.computed.after(this.rootStore, this.name + '.computed.' + key, newValue, oldValue)
+        })
       }, {
         deep: true
       })
@@ -181,6 +172,8 @@ export class VueReactiveStore implements VRSStore {
      */
     Object.keys(this.subStores).forEach((moduleName) => {
       this.state[moduleName] = this.subStores[moduleName].state
+      // this won't work, because in computed we have to store functions,
+      // but here we're trying to store Objects... ? so we can't nest modules.computed
       // this.computed[moduleName] = this.subStores[moduleName].computed
     })
   }

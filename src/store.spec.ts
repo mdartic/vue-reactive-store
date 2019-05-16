@@ -6,8 +6,20 @@ import { VueReactiveStore } from './store'
 import { VRSStore, VRSHook, VRSPlugin, VRSState } from './typings'
 
 describe('VueReactiveStore', () => {
-  test('has global hooks available', () => {
+  test('has a register plugin function available', () => {
     expect(VueReactiveStore.registerPlugin).toBeDefined()
+  })
+  test('throw an error if no store is given in param', () => {
+    expect(() => {
+      // @ts-ignore
+      // eslint-disable-next-line
+      new VueReactiveStore()
+    }).toThrow()
+  })
+  test('set default values for name and state if not provided', () => {
+    const reactiveStore = new VueReactiveStore({ })
+    expect(reactiveStore.name).toBe('default store name')
+    // expect(reactiveStore.state).toEqual({})
   })
   test('is built with a JS Object with a state sharing the same reference than VRS Store', () => {
     const state = {
@@ -94,9 +106,9 @@ describe('VueReactiveStore', () => {
   test('call hookWrapper for each actionHook available', async () => {
     const myMockAction = (param: string) => {
       expect(param).toBe('hello')
-      jsStore.state.myData = param
+      jsStore.state!.myData = param
     }
-    const jsStore = {
+    const jsStore: VRSStore = {
       name: 'my-store',
       state: {
         myData: 'pouet',
@@ -105,30 +117,43 @@ describe('VueReactiveStore', () => {
       actions: {
         myAction: myMockAction
       },
-      hooks: {
+      plugins: [{
         actions: {
-          before (storeName: string, funcName: string, storeState: VRSState) {
-            expect(storeName).toBe('my-store')
-            expect(funcName).toBe('myAction')
-            expect(storeState).toStrictEqual({
+          before (store: VRSStore, funcName: string, wrapperId: string) {
+            expect(store.name).toBe('my-store')
+            expect(funcName).toBe('my-store.actions.myAction')
+            expect(store.state).toStrictEqual({
               myData: 'pouet',
               myData2: 'pouic'
             })
           },
-          after (storeName: string, funcName: string, storeState: VRSState) {
-            expect(storeName).toBe('my-store')
-            expect(funcName).toBe('myAction')
-            expect(storeState).toStrictEqual({
+          after (store: VRSStore, funcName: string, wrapperId: string) {
+            expect(store.name).toBe('my-store')
+            expect(funcName).toBe('my-store.actions.myAction')
+            expect(store.state).toStrictEqual({
               myData: 'hello',
               myData2: 'pouic'
             })
           }
         }
-      }
+      }]
     }
     const reactiveStore = new VueReactiveStore(jsStore)
-    expect(jsStore.actions.myAction).not.toBe(myMockAction)
-    jsStore.actions.myAction('hello')
+    expect(jsStore.actions!.myAction).not.toBe(myMockAction)
+    jsStore.actions!.myAction('hello')
+  })
+  test('throw an error when a plugin is already registered', async () => {
+    const plugin = {
+      state: {
+        after: jest.fn()
+      }
+    }
+    const originalWarn = console.warn
+    console.warn = jest.fn()
+    VueReactiveStore.registerPlugin(plugin)
+    VueReactiveStore.registerPlugin(plugin)
+    expect(console.warn).toHaveBeenCalled()
+    console.warn = originalWarn
   })
   test('trigger a global plugin on a state (after) when a state property change', async () => {
     const jsStore: VRSStore = {
@@ -145,10 +170,31 @@ describe('VueReactiveStore', () => {
     }
     VueReactiveStore.registerPlugin(plugin)
     const reactiveStore = new VueReactiveStore(jsStore)
-    jsStore.state.myData = 'hello'
+    jsStore.state!.myData = 'hello'
     await Vue.nextTick()
     expect(plugin.state.after).toHaveBeenCalled()
-    expect(plugin.state.after).toHaveBeenCalledWith('my-store', 'myData', 'hello', 'pouet')
+    expect(plugin.state.after).toHaveBeenCalledWith(reactiveStore, 'my-store.state.myData', 'hello', 'pouet')
+  })
+  test('trigger a local plugin on a state (after) when a state property change', async () => {
+    const jsStore: VRSStore = {
+      name: 'my-store',
+      state: {
+        myData: 'pouet',
+        myData2: 'pouic'
+      },
+      plugins: [
+        {
+          state: {
+            after: jest.fn()
+          }
+        }
+      ]
+    }
+    const reactiveStore = new VueReactiveStore(jsStore)
+    jsStore.state!.myData = 'hello'
+    await Vue.nextTick()
+    expect(jsStore.plugins![0].state!.after).toHaveBeenCalled()
+    expect(jsStore.plugins![0].state!.after).toHaveBeenCalledWith(reactiveStore, 'my-store.state.myData', 'hello', 'pouet')
   })
   test('trigger a global hook on a computed (after) when a computed property change', async () => {
     const jsStore: VRSStore = {
@@ -159,7 +205,7 @@ describe('VueReactiveStore', () => {
       },
       computed: {
         myComputed () {
-          return jsStore.state.myData + jsStore.state.myData2
+          return jsStore.state!.myData + jsStore.state!.myData2
         }
       }
     }
@@ -170,10 +216,34 @@ describe('VueReactiveStore', () => {
     }
     VueReactiveStore.registerPlugin(plugin)
     const reactiveStore = new VueReactiveStore(jsStore)
-    jsStore.state.myData = 'hello'
+    jsStore.state!.myData = 'hello'
     await Vue.nextTick()
     expect(plugin.computed.after).toHaveBeenCalled()
-    expect(plugin.computed.after).toHaveBeenCalledWith('my-store', 'myComputed', 'hellopouic', 'pouetpouic')
+    expect(plugin.computed.after).toHaveBeenCalledWith(reactiveStore, 'my-store.computed.myComputed', 'hellopouic', 'pouetpouic')
+  })
+  test('trigger a local hook on a computed (after) when a computed property change', async () => {
+    const jsStore: VRSStore = {
+      name: 'my-store',
+      state: {
+        myData: 'pouet',
+        myData2: 'pouic'
+      },
+      computed: {
+        myComputed () {
+          return jsStore.state!.myData + jsStore.state!.myData2
+        }
+      },
+      plugins: [{
+        computed: {
+          after: jest.fn()
+        }
+      }]
+    }
+    const reactiveStore = new VueReactiveStore(jsStore)
+    jsStore.state!.myData = 'hello'
+    await Vue.nextTick()
+    expect(jsStore.plugins![0].computed!.after).toHaveBeenCalled()
+    expect(jsStore.plugins![0].computed!.after).toHaveBeenCalledWith(reactiveStore, 'my-store.computed.myComputed', 'hellopouic', 'pouetpouic')
   })
   test('trigger a hook with the right name of store when it s a state property of a module', async () => {
     const module1: VRSStore = {
@@ -197,9 +267,26 @@ describe('VueReactiveStore', () => {
     }
     VueReactiveStore.registerPlugin(plugin)
     const reactiveStore = new VueReactiveStore(jsStore)
-    module1.state.myData = 'hello'
+    module1.state!.myData = 'hello'
     await Vue.nextTick()
     expect(plugin.state.after).toHaveBeenCalled()
-    expect(plugin.state.after).toHaveBeenCalledWith('my-store.modules.module1', 'myData', 'hello', 'myData of module1')
+    expect(plugin.state.after).toHaveBeenCalledWith(reactiveStore, 'my-store.modules.module1.state.myData', 'hello', 'myData of module1')
+  })
+  test('trigger a watch correctly', () => {
+    expect.assertions(2)
+    const jsStore: VRSStore = {
+      name: 'my-store',
+      state: {
+        myData: 'myData of module1'
+      },
+      watch: {
+        myData (newValue, oldValue) {
+          expect(oldValue).toBe('myData of module1')
+          expect(newValue).toBe('hello')
+        }
+      }
+    }
+    const reactiveStore = new VueReactiveStore(jsStore)
+    jsStore.state!.myData = 'hello'
   })
 })

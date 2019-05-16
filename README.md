@@ -28,7 +28,7 @@ A store is composed of :
 * **computed** properties based on this state (think the `computed` of a Vue.js instance, or the `getters` for VueX)
 * **actions** that will make API calls, mutate the state, ... (think `actions` for VueX, but with `mutations` inside)
 * **watch(ers)** that could react to state / computed evolutions (same as `watch` for Vue.js instance)
-* **hooks**, trigerred for state evolution, computed properties, actions / watchers trigerred
+* **plugins**, trigerred for state evolution, computed properties, actions / watchers trigerred
 * **modules**, aka sub-stores, namespaced
 * ***props***, like Vue.js instances, but, just an idea for the moment
 
@@ -75,13 +75,13 @@ const store = {
       store.state.loading = false
     }
   },
-  hooks: {
+  plugins: [{
     actions: {
       after(storeName, actionName, storeState) {
         console.log('action is finished, this is my store : ', storeState)
       }
     }
-  }
+  }]
 }
 
 const reactiveStore = new VueReactiveStore(store)
@@ -131,7 +131,7 @@ components to facilitate your project maintenability...
 ### Next episodes
 
 * finishing blog articles (FR)
-* extend the code coverage (done)
 * release a plugin for log every mutation / action call / watch / ...
 * release a plugin for storing data in localStorage
+* release a plugin for history (undo / redo)
 * listen to community needs
