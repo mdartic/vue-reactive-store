@@ -1,7 +1,6 @@
 ## vue-reactive-store
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/mdartic/vue-reactive-store.svg)](https://greenkeeper.io/)
-
 ![](https://gitlab.com/mad-z/vue-reactive-store-ci-cd/badges/master/pipeline.svg)
 ![](https://gitlab.com/mad-z/vue-reactive-store-ci-cd/badges/master/coverage.svg)
 
