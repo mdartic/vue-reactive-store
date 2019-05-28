@@ -18,7 +18,7 @@ describe('VueReactiveStore', () => {
   })
   test('set default values for name and state if not provided', () => {
     const reactiveStore = new VueReactiveStore({ })
-    expect(reactiveStore.name).toBe('default store name')
+    expect(reactiveStore.name).toBe('my-store')
     // expect(reactiveStore.state).toEqual({})
   })
   test('is built with a JS Object with a state sharing the same reference than VRS Store', () => {

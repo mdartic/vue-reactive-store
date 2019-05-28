@@ -74,7 +74,7 @@ export class VueReactiveStore implements VRSStore {
    */
   constructor (store: VRSStore, rootStore?: VRSStore) {
     if (!store) throw new Error('Please provide a store to VueReactiveStore')
-    this.name = store.name || 'default store name'
+    this.name = store.name || 'my-store'
     this.state = store.state || {}
     this.computed = store.computed || {}
     this.actions = store.actions || {}
