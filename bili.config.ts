@@ -5,7 +5,8 @@ const config: Config = {
   banner: true,
   input: [
     'src/index.ts',
-    'src/plugins/logger.ts'
+    'src/plugins/logger.ts',
+    'src/plugins/devtools.ts'
   ],
   plugins: {
     typescript2: {

@@ -8,10 +8,9 @@
 
 Without `mutations`, and with async `actions` mutating directly the state.
 
-This library is for the moment a personal project, written in TypeScript
-for better discoverability / maintenability.
+This library is in a WIP state.
 
-**It's not made for production use !... (for the moment)**
+You can create issues to ask for some features, or if you find bugs.
 
 I'm currently writing a French blog article to explain the use cases.
 
@@ -32,6 +31,21 @@ A store is composed of :
 * **plugins**, trigerred for state evolution, computed properties, actions / watchers trigerred
 * **modules**, aka sub-stores, namespaced
 * ***props***, like Vue.js instances, but, just an idea for the moment
+
+### Why creating an alternative ?
+
+I think we can do a store simpler than VueX.
+
+With VS Code and Intellisense, I would like my IDE
+tell me what's in my store, instead of calling dispatch functions
+or mapGetters / mapState functions.
+
+We could trigger actions by importing them directly where we want to use them.
+Not by dispatching an action with a string composed by his namespace / function name.
+
+And I think we can do better with TypeScript, to help us with typings.
+
+For the moment, autocompletion is not as good as I want. I'm working on it.
 
 ### How to use it
 
@@ -195,6 +209,49 @@ VRSPluginLogger.logSettings.computed = false;
 VRSPluginLogger.logSettings.state = false;
 ```
 
+### Devtools plugin
+
+Like VueX, you can debug your store with [vue-devtools](https://github.com/vuejs/vue-devtools/).
+
+It's not enabled 'by default', and you have to explicitly add the devtools plugin like that :
+
+```javascript
+import VueReactiveStore from 'vue-reactive-store'
+import VRSPluginDevtools from 'vue-reactive-store/dist/devtools.esm'
+
+const store = {
+  state: {
+    loading: false,
+    error: null,
+    results: null
+  },
+  actions: {
+    async fetchData () {
+      store.state.loading = true
+      try {
+        // blablabla
+        store.state.results = 'pwet'
+      } catch (e) {
+        store.state.error = e
+      }
+      store.state.loading = false
+    }
+  },
+  plugins: [
+    VRSPluginDevtools
+  ]
+}
+
+new VueReactiveStore(store)
+
+export default store
+```
+
+Then you could observe there is a store detected in the VueX tab of vue-devtools.
+
+**Time Travel** is normally ok, but maybe there are some lacks for **Commit mutations**.
+
+Submit an issue if you find bugs.
 
 ### Next episodes
 

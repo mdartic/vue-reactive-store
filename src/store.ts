@@ -2,7 +2,7 @@
 import Vue, { ComputedOptions, WatchOptionsWithHandler, WatchHandler } from 'vue'
 
 // eslint-disable-next-line no-unused-vars
-import { VRSStore, VRSPlugin } from './typings'
+import { VRSStore, VRSPlugin, VRSPluginFunction } from './typings'
 
 import { hookWrapper } from './wrapper'
 
@@ -79,7 +79,16 @@ export class VueReactiveStore implements VRSStore {
     this.computed = store.computed || {}
     this.actions = store.actions || {}
     this.watch = store.watch || {}
-    this.plugins = store.plugins || []
+    this.plugins = []
+    if (store.plugins) {
+      store.plugins.forEach(p => {
+        if (typeof p === 'function') {
+          this.plugins.push((<VRSPluginFunction>p)(this))
+        } else {
+          this.plugins.push(p)
+        }
+      })
+    }
     this.modules = store.modules || {}
     this.rootStore = rootStore || this
 
@@ -105,7 +114,8 @@ export class VueReactiveStore implements VRSStore {
       // }
       this.subStores[moduleName] = new VueReactiveStore({
         ...this.modules[moduleName],
-        name: this.name + '.modules.' + this.modules[moduleName].name
+        name: this.name + '.modules.' + (this.modules[moduleName].name || moduleName),
+        plugins: (this.modules[moduleName].plugins || []).concat(this.plugins)
       }, this.rootStore)
     })
 

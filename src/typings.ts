@@ -39,6 +39,10 @@ export interface VRSPlugin {
   watch?: VRSHook,
 }
 
+export interface VRSPluginFunction {
+  (store: VRSStore): VRSPlugin
+}
+
 export interface VRSState {
   [name: string]: any,
 }
@@ -61,7 +65,7 @@ export interface VRSStore {
   computed?: VRSComputed,
   // props?: Object,
   watch?: Record<string, string | WatchOptionsWithHandler<any> | WatchHandler<any>>,
-  plugins?: VRSPlugin[],
+  plugins?: Array<VRSPlugin | VRSPluginFunction>,
   modules?: {
     [name: string]: VRSStore
   },
