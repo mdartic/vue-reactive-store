@@ -193,8 +193,8 @@ describe('VueReactiveStore', () => {
     const reactiveStore = new VueReactiveStore(jsStore)
     jsStore.state!.myData = 'hello'
     await Vue.nextTick()
-    expect(jsStore.plugins![0].state!.after).toHaveBeenCalled()
-    expect(jsStore.plugins![0].state!.after).toHaveBeenCalledWith(reactiveStore, 'my-store.state.myData', 'hello', 'pouet')
+    expect((jsStore.plugins![0] as VRSPlugin).state!.after).toHaveBeenCalled()
+    expect((jsStore.plugins![0] as VRSPlugin).state!.after).toHaveBeenCalledWith(reactiveStore, 'my-store.state.myData', 'hello', 'pouet')
   })
   test('trigger a global hook on a computed (after) when a computed property change', async () => {
     const jsStore: VRSStore = {
@@ -242,8 +242,8 @@ describe('VueReactiveStore', () => {
     const reactiveStore = new VueReactiveStore(jsStore)
     jsStore.state!.myData = 'hello'
     await Vue.nextTick()
-    expect(jsStore.plugins![0].computed!.after).toHaveBeenCalled()
-    expect(jsStore.plugins![0].computed!.after).toHaveBeenCalledWith(reactiveStore, 'my-store.computed.myComputed', 'hellopouic', 'pouetpouic')
+    expect((jsStore.plugins![0] as VRSPlugin).computed!.after).toHaveBeenCalled()
+    expect((jsStore.plugins![0] as VRSPlugin).computed!.after).toHaveBeenCalledWith(reactiveStore, 'my-store.computed.myComputed', 'hellopouic', 'pouetpouic')
   })
   test('trigger a hook with the right name of store when it s a state property of a module', async () => {
     const module1: VRSStore = {
