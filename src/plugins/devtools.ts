@@ -36,6 +36,11 @@ interface VRSStoreForDevtools extends VRSStore {
  * @param vrsStore
  */
 const vrsPluginDevtools = (vrsStore: VRSStoreForDevtools): VRSPlugin => {
+  if (!devtoolHook) {
+    console.warn('[vrs-plugin-devtools] vue-devtools is not installed. Please install before trying to use vrs-plugin-devtools')
+    return {}
+  }
+
   vrsStore._mutations = {}
   vrsStore._devtoolHook = devtoolHook
 
