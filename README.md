@@ -101,7 +101,7 @@ const store = {
 
 const reactiveStore = new VueReactiveStore(store)
 
-export default store
+export default reactiveStore
 ```
 
 Finally, use it in your components by importing the store,
