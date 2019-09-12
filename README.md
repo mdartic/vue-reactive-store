@@ -147,6 +147,21 @@ components to facilitate your project maintenability...
 To use the data, you'll have to wire the `state` property of the `store`.
 If you wire `store.state.data`, you'll get `null` and your `data` property isn't reactive yet.
 
+```
+import store from '../store'
+
+export default {
+  data: {
+    data: store.state.data, // here, you'll always get 'null'
+    state: store.state // here, state is reactive, and so all children, like data
+  },
+  …
+}
+```
+
+For computed properties or actions, it'll be fine.
+You can wire directly the computed property or the action.
+
 ### Logger plugin
 
 There is a logger plugin that logs 
