@@ -1,4 +1,4 @@
-import Vue from 'vue'
+// import Vue from 'vue'
 
 // eslint-disable-next-line no-unused-vars
 import { VRSHook, VRSStore } from './typings'
@@ -19,10 +19,10 @@ export const hookWrapper = (
   key: string,
   func: Function,
   hooks: VRSHook[]
-) => async (...args: any) => {
+) => async (...args: any[]) => {
   const wrapperId = uuidv4()
   // wait for initial mutation of store
-  await Vue.nextTick()
+  // await Vue.nextTick()
 
   // call all before hooks
   // and memorize result to pass it to the after hook
@@ -31,10 +31,14 @@ export const hookWrapper = (
   })
 
   // we call the initial function with parameters
-  await func(...args)
+  // if it's a promise, we will use await on it
+  const funcResult: Promise<{}>|{} = func(...args)
+  if (funcResult instanceof Promise) {
+    await funcResult
+  }
 
   // we wait for the next DOM update (and so the state mutations)
-  await Vue.nextTick()
+  // await Vue.nextTick()
 
   // call all after hooks
   hooks.forEach(hook => {

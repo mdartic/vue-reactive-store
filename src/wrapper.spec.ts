@@ -4,7 +4,8 @@ import { hookWrapper } from './wrapper'
 import { VRSState, VRSStore } from './typings'
 
 describe('hookWrapper', () => {
-  test('call the initial function without modifying params', async () => {
+  test('call the initial function without modifying params', () => {
+    expect.assertions(2)
     const state = {
       myData: 'pouet',
       myData2: 'pouic'
@@ -22,10 +23,11 @@ describe('hookWrapper', () => {
     },
     []
     )
-    await functionWrapped('hi', 'ho')
+    functionWrapped('hi', 'ho')
   })
-  test('call before/after hooks with right params', async () => {
-    let wrapperIdBeforeHook: string = ''
+  test('call before/after hooks with right params', () => {
+    expect.assertions(9)
+    let wrapperIdBeforeHook = 'this is a wrapper id'
     const state = {
       myData: 'pouet',
       myData2: 'pouic'
@@ -38,6 +40,46 @@ describe('hookWrapper', () => {
     function (newMyData: string, newMyData2: string) {
       state.myData = newMyData
       state.myData2 = newMyData2
+    },
+    [
+      {
+        before (store: VRSStore, funcName: string, wrapperId: string) {
+          expect(store.name).toBe('store name')
+          expect(store.state!.myData).toBe('pouet')
+          expect(store.state!.myData2).toBe('pouic')
+          expect(funcName).toBe('functionName')
+          wrapperIdBeforeHook = wrapperId
+        },
+        after (store: VRSStore, funcName: string, wrapperId: string) {
+          expect(store.name).toBe('store name')
+          expect(store.state!.myData).toBe('hi')
+          expect(store.state!.myData2).toBe('ho')
+          expect(funcName).toBe('functionName')
+          expect(wrapperId).toBe(wrapperIdBeforeHook)
+        }
+      }
+    ]
+    )
+    functionWrapped('hi', 'ho')
+  })
+  test('call before/after hooks with right params when action is async', async () => {
+    expect.assertions(9)
+    let wrapperIdBeforeHook = ''
+    const state = {
+      myData: 'pouet',
+      myData2: 'pouic'
+    }
+    const functionWrapped = hookWrapper({
+      name: 'store name',
+      state
+    },
+    'functionName',
+    function (newMyData: string, newMyData2: string) {
+      return new Promise((resolve) => {
+        state.myData = newMyData
+        state.myData2 = newMyData2
+        setTimeout(resolve, 1000)
+      })
     },
     [
       {
