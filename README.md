@@ -143,6 +143,10 @@ this object.
 But, don't import it everywhere, just use it in your 'top-level'
 components to facilitate your project maintenability...
 
+**IMPORTANT !**
+To use the data, you'll have to wire the `state` property of the `store`.
+If you wire `store.state.data`, you'll get `null` and your `data` property isn't reactive yet.
+
 ### Logger plugin
 
 There is a logger plugin that logs 
