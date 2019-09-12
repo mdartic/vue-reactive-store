@@ -1,4 +1,4 @@
-import Vue from 'vue'
+// import Vue from 'vue'
 
 // eslint-disable-next-line no-unused-vars
 import { VRSHook, VRSStore } from './typings'
@@ -19,7 +19,7 @@ export const hookWrapper = (
   key: string,
   func: Function,
   hooks: VRSHook[]
-) => async (...args: any) => {
+) => async (...args: any[]) => {
   const wrapperId = uuidv4()
   // wait for initial mutation of store
   // await Vue.nextTick()
@@ -32,7 +32,7 @@ export const hookWrapper = (
 
   // we call the initial function with parameters
   // if it's a promise, we will use await on it
-  const funcResult: Promise<any>|Object = func(...args)
+  const funcResult: Promise<{}>|{} = func(...args)
   if (funcResult instanceof Promise) {
     await funcResult
   }

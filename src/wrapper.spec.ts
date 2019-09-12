@@ -27,7 +27,7 @@ describe('hookWrapper', () => {
   })
   test('call before/after hooks with right params', () => {
     expect.assertions(9)
-    let wrapperIdBeforeHook: string = 'this is a wrapper id'
+    let wrapperIdBeforeHook = 'this is a wrapper id'
     const state = {
       myData: 'pouet',
       myData2: 'pouic'
@@ -64,7 +64,7 @@ describe('hookWrapper', () => {
   })
   test('call before/after hooks with right params when action is async', async () => {
     expect.assertions(9)
-    let wrapperIdBeforeHook: string = ''
+    let wrapperIdBeforeHook = ''
     const state = {
       myData: 'pouet',
       myData2: 'pouic'
