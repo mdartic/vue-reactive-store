@@ -8,11 +8,13 @@
 
 Without `mutations`, and with async `actions` mutating directly the state.
 
+We could talk about `mutactions`.
+
+Compatible with [`vue-devtools`](https://github.com/vuejs/vue-devtools/) by using a plugin.
+
 This library is in a WIP state.
 
 You can create issues to ask for some features, or if you find bugs.
-
-I'm currently writing a French blog article to explain the use cases.
 
 If feedbacks are goods, I'll write a better documentation :-)
 with english examples and take care of this library.
