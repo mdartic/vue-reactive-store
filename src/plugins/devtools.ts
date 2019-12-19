@@ -16,12 +16,21 @@ const devtoolHook = target.__VUE_DEVTOOLS_GLOBAL_HOOK__
  * and tell vue-devtools all mutations in vuex tab
  */
 interface VRSStoreForDevtools extends VRSStore {
+  // getters: VRSComputed | undefined;
   _mutations: { [index: string]: Function }
   _devtoolHook: Function
   flushStoreModules: Function
   registerModule: Function
   unregisterModule: Function
   replaceState: Function
+}
+
+/**
+ * This object allows us to store a state
+ * * recordEvents allow devtools plugin communicate to vue-devtools
+ */
+const VRSDevtoolsState = {
+  recordEvents: true
 }
 
 /**
@@ -44,8 +53,6 @@ const vrsPluginDevtools = (vrsStore: VRSStoreForDevtools): VRSPlugin => {
   vrsStore._mutations = {}
   vrsStore._devtoolHook = devtoolHook
 
-  let disableVueDevtoolsEvents = false
-
   /**
    * These three methods are required,
    * but for my current knowledge,
@@ -67,6 +74,10 @@ const vrsPluginDevtools = (vrsStore: VRSStoreForDevtools): VRSPlugin => {
    * after replaying all mutations to the 'active state'
    */
   function replaceState (targetStore: VRSStore, targetState: VRSState) {
+    if (!targetState) {
+      console.warn('[vrs-plugin-devtools] state is null. can\'t replace a state with null')
+      return
+    }
     Object.keys(targetState).forEach(k => {
       if (targetStore.modules && targetStore.modules[k]) return replaceState(targetStore.modules[k], targetState[k])
       targetStore.state![k] = targetState[k]
@@ -74,17 +85,20 @@ const vrsPluginDevtools = (vrsStore: VRSStoreForDevtools): VRSPlugin => {
   }
 
   vrsStore.replaceState = (targetState: VRSState) => {
-    console.info('[vrs-plugin-devtools] replacing state... (asked by vue-devtools) ', targetState)
+    console.info('[vrs-plugin-devtools] replacing state... (asked by vue-devtools) ', JSON.parse(JSON.stringify(targetState)), vrsStore.name)
+    console.info('[vrs-plugin-devtools] stop recording mutations', vrsStore.name)
+    VRSDevtoolsState.recordEvents = false
     replaceState(vrsStore, targetState)
+    VRSDevtoolsState.recordEvents = true
+    console.info('[vrs-plugin-devtools] start recording mutations', vrsStore.name)
   }
 
   /**
    * We react to the `vuex:travel-to-state` event of vue-devtools
    */
   devtoolHook.on('vuex:travel-to-state', (targetState: VRSState) => {
-    disableVueDevtoolsEvents = true
+    console.info('[vrs-plugin-devtools] travel to state... (asked by vue-devtools) ', targetState)
     vrsStore.replaceState(targetState)
-    disableVueDevtoolsEvents = false
   })
 
   // we emit the first event to vue-devtools, base state of the store
@@ -99,15 +113,23 @@ const vrsPluginDevtools = (vrsStore: VRSStoreForDevtools): VRSPlugin => {
     state: {
       after (rootStore, stateProperty, newValue) {
         // we emit events only if it's not disabled
-        if (disableVueDevtoolsEvents) return
+        if (!VRSDevtoolsState.recordEvents) return
         const jsonStoreState = JSON.parse(JSON.stringify(rootStore.state))
 
+        /**
+         * In VueX, there is an array of mutations in `_mutations` property
+         * Not in vue-reactive-store
+         * This code is here to mimic the array,
+         * so vue-devtools could trigger every mutation
+         * on the initial store it knows, thanks to the `vue:init` event
+         */
         vrsStore._mutations[stateProperty] = (payload: any) => {
           const arrayPaths = stateProperty.split('.')
+          // storeName.state.property => 3 elements, it's a property
           if (arrayPaths.length < 3) return
           if (arrayPaths[0] !== vrsStore.name) return
           if (arrayPaths[1] !== 'state') return
-          let currentStateObject = vrsStore.state
+          let currentStateObject = vrsStore.state || {}
           let targetStateObject = null
           let i = 2
           for (i; i < arrayPaths.length; i++) {
