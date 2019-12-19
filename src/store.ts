@@ -40,20 +40,25 @@ export class VueReactiveStore implements VRSStore {
   state: {
     [name: string]: any,
   } = {}
+
   actions: {
     [name: string]: Function
   } = {}
+
   computed: {
     [name: string]: (() => any) | ComputedOptions<any>
   } = {}
+
   watch: Record<string, string | WatchOptionsWithHandler<any> | WatchHandler<any>> = {}
   plugins: VRSPlugin[] = []
   modules: {
     [name: string]: VRSStore
   } = {}
+
   private subStores: {
     [name: string]: VueReactiveStore
   } = {}
+
   private rootStore: VRSStore
 
   /**
@@ -142,6 +147,10 @@ export class VueReactiveStore implements VRSStore {
       computed: store.computed,
       watch: store.watch
     })
+
+    // now we can replace the initial store
+    // with _vm attributes
+    store.state = this._vm.$data
 
     // listen to state mutations of current store
     // doesn't work for modules because they will be added after
