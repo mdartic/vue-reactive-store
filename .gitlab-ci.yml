@@ -1,0 +1,34 @@
+image: node:lts
+
+stages:
+  - lint
+  - tests
+  - build
+
+before_script:
+  - yarn
+
+# lint stage
+lint:
+  stage: lint
+  script:
+    - yarn lint
+
+# test stage
+test:
+  stage: tests
+  script:
+    - yarn test
+
+# build stage
+build:
+  stage: build
+  script:
+    - yarn build
+
+# # publish
+# publish:
+#   stage: build
+#   script:
+#     - yarn publish
+#   when: manual
