@@ -30,7 +30,7 @@
     "vue": "^2.6.11"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.23",
+    "@types/jest": "^25.1.4",
     "@typescript-eslint/parser": "^2.12.0",
     "bili": "^4.8.1",
     "eslint": "^6.7.2",
